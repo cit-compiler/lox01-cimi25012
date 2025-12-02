@@ -1,6 +1,6 @@
-package codes.com.craftinginterpreters.lox;
+package com.craftinginterpreters.lox;
 
-import static codes.com.craftinginterpreters.lox.TokenType.*;
+import static com.craftinginterpreters.lox.TokenType.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -115,8 +115,6 @@ private int line = 1;
     TokenType type = keywords.get(text);
     if (type == null) type = IDENTIFIER;
     addToken(type);
-
-    addToken(IDENTIFIER);
   }
 
   private boolean isAlpha(char c) {
