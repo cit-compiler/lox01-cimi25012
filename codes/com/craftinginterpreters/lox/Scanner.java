@@ -1,9 +1,8 @@
-package codes.com.craftinginterpreters.lox;   // ←これが超大事！
+package codes.com.craftinginterpreters.lox;   
 
+import static codes.com.craftinginterpreters.lox.TokenType.*;
 import java.util.ArrayList;
-import java.util.List;
-
-import static codes.com.craftinginterpreters.lox.TokenType.*; 
+import java.util.List; 
 
 public class Scanner {
   private final String source;
@@ -40,14 +39,75 @@ public class Scanner {
       case '+': addToken(PLUS); break;
       case ';': addToken(SEMICOLON); break;
       case '*': addToken(STAR); break; 
+      case '!':
+        /*
+        if (match('=')) {
+        addToken(BANG_EQUAL);
+        } else {
+        addToken(BANG);
+        }
+        */
+        addToken(match('=') ? BANG_EQUAL : BANG);
+        break;
+      case '=':
+        addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+        break;
+      case '<':
+        addToken(match('=') ? LESS_EQUAL : LESS);
+        break;
+      case '>':
+        addToken(match('=') ? GREATER_EQUAL : GREATER);
+        break;
+      case '/':
+        if (match('/')) {
+          while (peek() != '\n' && !isAtEnd()) advance();
+        } else {
+          addToken(SLASH);
+        }
+        break;
+      case ' ':
+      case '\r':
+      case '\t':
+        break;
+      case '\n':
+        line++;
+        break;
       default:
         Lox.error(line, "Unexpected character.");
         break;
     }
+
+  }
+  private void string() {
+    while (peek() != '"' && !isAtEnd()) {
+      if (peek() == '\n') line++;
+      advance();
+    }
+
+    if (isAtEnd()) {
+      Lox.error(line, "Unterminated string.");
+      return;
+    }
+    advance();
+
+    String value = source.substring(start + 1, current - 1);
+    addToken(STRING, value);
+  }
+  private boolean match(char expected) {
+    if (isAtEnd()) return false;
+    if (source.charAt(current) != expected) return false;
+
+    current++;
+    return true;
   }
 
   private char advance() {
     return source.charAt(current++);
+  }
+
+  private char peek() {
+    if (isAtEnd()) return '\0';
+    return source.charAt(current);
   }
 
   private void addToken(TokenType type) {
