@@ -41,7 +41,6 @@ class Parser {
 
   private Stmt statement() {
     if (match(PRINT)) return printStatement();
-
     return expressionStatement();
   }
 
