@@ -59,8 +59,7 @@ class Interpreter implements Expr.Visitor<Object> {
     throw new RuntimeError(operator, "Operand must be a number.");
   }
 
-  private void checkNumberOperands(Token operator,
-                                   Object left, Object right) {
+  private void checkNumberOperands(Token operator,Object left, Object right) {
     if (left instanceof Double && right instanceof Double) return;
     
     throw new RuntimeError(operator, "Operands must be numbers.");
@@ -100,8 +99,8 @@ class Interpreter implements Expr.Visitor<Object> {
           return (String)left + (String)right;
         }
 
-        throw new RuntimeError(expr.operator,
-            "Operands must be two numbers or two strings.");
+        throw new RuntimeError(expr.operator,"Operands must be two numbers or two strings.");
+        
         case SLASH:
           checkNumberOperands(expr.operator, left, right);
           return (double)left / (double)right;
