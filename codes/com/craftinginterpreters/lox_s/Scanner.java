@@ -1,15 +1,16 @@
-package com.craftinginterpreters.lox;
+package com.craftinginterpreters.lox_s;
 
-import static com.craftinginterpreters.lox.TokenType.*;
+import static com.craftinginterpreters.lox_s.TokenType.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Scanner {
-private final String source;
-private final List<Token> tokens = new ArrayList<>();
- private static final Map<String, TokenType> keywords;
+  private final String source;
+  private final List<Token> tokens = new ArrayList<>();
+
+  private static final Map<String, TokenType> keywords;
   static {
     keywords = new HashMap<>();
     keywords.put("and",    AND);
@@ -29,9 +30,10 @@ private final List<Token> tokens = new ArrayList<>();
     keywords.put("var",    VAR);
     keywords.put("while",  WHILE);
   }
-private int start = 0;
-private int current = 0;
-private int line = 1;
+
+  private int start = 0;
+  private int current = 0;
+  private int line = 1;
 
   Scanner(String source) {
     this.source = source;
@@ -60,15 +62,9 @@ private int line = 1;
       case '-': addToken(MINUS); break;
       case '+': addToken(PLUS); break;
       case ';': addToken(SEMICOLON); break;
-      case '*': addToken(STAR); break; 
+      case '*': addToken(STAR); break;
+
       case '!':
-        /*
-        if (match('=')) {
-        addToken(BANG_EQUAL);
-        } else {
-        addToken(BANG);
-        }
-        */
         addToken(match('=') ? BANG_EQUAL : BANG);
         break;
       case '=':
@@ -80,6 +76,7 @@ private int line = 1;
       case '>':
         addToken(match('=') ? GREATER_EQUAL : GREATER);
         break;
+
       case '/':
         if (match('/')) {
           while (peek() != '\n' && !isAtEnd()) advance();
@@ -87,17 +84,21 @@ private int line = 1;
           addToken(SLASH);
         }
         break;
+
       case ' ':
       case '\r':
       case '\t':
         break;
+
       case '\n':
         line++;
         break;
 
-      case '"':string();break;
+      // ★ここが今回の変更点： " と ' の両方に対応
+      case '"':  string('"');  break;
+      case '\'': string('\''); break;
 
-       default:
+      default:
         if (isDigit(c)) {
           number();
         } else if (isAlpha(c)) {
@@ -108,7 +109,8 @@ private int line = 1;
         break;
     }
   }
-   private void identifier() {
+
+  private void identifier() {
     while (isAlphaNumeric(peek())) advance();
 
     String text = source.substring(start, current);
@@ -120,7 +122,7 @@ private int line = 1;
   private boolean isAlpha(char c) {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
-            c == '_';
+           c == '_';
   }
 
   private boolean isAlphaNumeric(char c) {
@@ -129,23 +131,23 @@ private int line = 1;
 
   private void number() {
     while (isDigit(peek())) advance();
-    if (peek() == '.' && isDigit(peekNext())) {
-      // Consume the "."
-      advance();
 
+    if (peek() == '.' && isDigit(peekNext())) {
+      advance(); // consume '.'
       while (isDigit(peek())) advance();
     }
 
-    addToken(NUMBER,Double.parseDouble(source.substring(start, current)));
+    addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
   }
 
   private char peekNext() {
     if (current + 1 >= source.length()) return '\0';
     return source.charAt(current + 1);
-  } 
+  }
 
-  private void string() {
-    while (peek() != '"' && !isAtEnd()) {
+  // ★ここが今回の変更点：区切り文字を引数で受け取る
+  private void string(char quote) {
+    while (peek() != quote && !isAtEnd()) {
       if (peek() == '\n') line++;
       advance();
     }
@@ -154,7 +156,8 @@ private int line = 1;
       Lox.error(line, "Unterminated string.");
       return;
     }
-    advance();
+
+    advance(); // closing quote
 
     String value = source.substring(start + 1, current - 1);
     addToken(STRING, value);
@@ -177,9 +180,9 @@ private int line = 1;
     return source.charAt(current);
   }
 
-   private boolean isDigit(char c) {
+  private boolean isDigit(char c) {
     return c >= '0' && c <= '9';
-  } 
+  }
 
   private void addToken(TokenType type) {
     addToken(type, null);
